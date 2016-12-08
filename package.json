@@ -1,0 +1,49 @@
+{
+    "author": "AOS",
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
+    "keywords": [],
+    "name": "andrew-s-watch",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Andrew's Watch",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "ShowBackwards",
+            "ShowSeconds",
+            "ShowUTC",
+            "ShowStreams",
+            "NotifCall",
+            "NotifSMS",
+            "NotifMail",
+            "NotifChat",
+            "NotifAlarm",
+            "NotifCalendar",
+            "Forecast[8]",
+            "Temperature[8]",
+            "Priority[4]",
+            "Stats[4]",
+            "PhoneBattery"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery"
+        ],
+        "uuid": "ac15c007-41c7-4a9d-a0c9-952c8c66a164",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
