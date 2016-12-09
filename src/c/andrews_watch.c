@@ -184,7 +184,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
 
   //Ask for weather update. Should be removed when the app does this.
-  if(tick_time->tm_hour % 6 == 0 && tick_time->tm_min == 30) {
+  if(tick_time->tm_hour % 6 == 0 && tick_time->tm_min == 30 && tick_time->tm_sec == 0) {
     // Begin dictionary
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
