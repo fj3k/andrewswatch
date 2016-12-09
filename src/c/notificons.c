@@ -6,6 +6,7 @@
 static time_t s_last_update;
 //Seven day forcast plus today (if checked late in the day)
 static int s_forecast[8] = {-2, -2, -2, -2, -2, -2, -2, -2};
+static int s_temperature[8] = {-40, -40, -40, -40, -40, -40, -40, -40};
 
 static int s_notificons[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -286,6 +287,7 @@ void draw_icon(Layer *layer, GContext *ctx) {
   for (int i = weatherstart; i < weatherstart + 3; i++) {
     GPoint weatherpos = s_weather_pos[i - weatherstart];
     int weatherforecast = i < 8 ? s_forecast[i] : WEATHER_NONE;
+    int temp = i < 8 ? s_temperature[i] : -40;
     if (
       weatherforecast == WEATHER_SUN
       || weatherforecast == WEATHER_PARTCLOUD
@@ -313,6 +315,24 @@ void draw_icon(Layer *layer, GContext *ctx) {
       draw_storm(ctx, weatherpos);
     } else if (weatherforecast == WEATHER_WINDY || weatherforecast == WEATHER_DUSTSTORM) {
       draw_wind(ctx, weatherpos, weatherforecast == WEATHER_DUSTSTORM);
+    }
+
+    if (temp == 0) {
+      char temp_buffer[2] = "0\0";
+      graphics_draw_text(ctx, temp_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_14), GRect(weatherpos.x - 16, weatherpos.y + 6, 20, 14), GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
+    } else if (temp != -40) {
+      char temp_buffer[4] = "   \0";
+      bool neg = (temp < 0);
+      if (neg) temp *= -1;
+      for (int j = 2; j >= 0; j--) {
+        if (temp == 0) {
+          if (neg) temp_buffer[j] = '-';
+          break;
+        }
+        temp_buffer[j] = (temp % 10) + '0';
+        temp = temp / 10;
+      }
+      graphics_draw_text(ctx, temp_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_14), GRect(weatherpos.x - 16, weatherpos.y + 6, 20, 14), GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
     }
   }
 
@@ -516,6 +536,10 @@ void icon_inbox(DictionaryIterator *iter, void *context) {
           s_forecast[i] = WEATHER_NONE;
       }
       s_last_update = time(NULL);
+    }
+    Tuple *notif_temperature_t = dict_find(iter, MESSAGE_KEY_Temperature + i);
+    if (notif_temperature_t) {
+      s_temperature[i] = notif_temperature_t->value->int32;
     }
   }
   Tuple *notif_priority_t = dict_find(iter, MESSAGE_KEY_Priority);

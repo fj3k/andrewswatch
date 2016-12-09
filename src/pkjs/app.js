@@ -27,13 +27,15 @@ function weatherService(pos) {
 
       var keys = require('message_keys');
       for (var i = 0; i < json.weather.forecast.length; i++) {
-//        var tempMax = Math.round(json.weather.forecast[i].max);
-//        var tempMin = Math.round(json.weather.forecast[i].min);
+        var tempMax = parseInt(json.weather.forecast[i].max, 10);
+//        var tempMin = parseInt(json.weather.forecast[i].min, 10);
         var icon = parseInt(json.weather.forecast[i].icon, 10);
   
-        var key = keys.Forecast + i;
         var dictionary = {};
-        dictionary[key] = icon;
+        var icokey = keys.Forecast + i;
+        var tempkey = keys.Temperature + i;
+        dictionary[icokey] = icon;
+        dictionary[tempkey] = tempMax;
   
         // Send to Pebble
         Pebble.sendAppMessage(dictionary, sendAppSuccess, sendAppError);
