@@ -20,10 +20,11 @@ var xhrRequest = function (url, type, callback) {
 
 function weatherService(pos) {
   var url = 'http://fj3k.com/pebble/';
-  if (pos) 
+  if (pos && !(pos.coords.latitude === 0 && pos.coords.longitude === 0)) {
     url += '?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
-  else if (defaultLoc.length > 0)
+  } else if (defaultLoc.length > 0) {
     url += '?acc=' + defaultLoc;
+  }
 
   xhrRequest(url, 'GET',
     function(responseText) {
