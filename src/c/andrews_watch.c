@@ -251,7 +251,7 @@ static void window_load(Window *window) {
   
   s_day_label = text_layer_create(GRect(centre.x - 26, centre.y + 30, 27, 20));
   text_layer_set_text(s_day_label, s_day_buffer);
-  text_layer_set_background_color(s_day_label, GColorBlack);
+  text_layer_set_background_color(s_day_label, GColorClear);
   text_layer_set_text_color(s_day_label, GColorWhite);
   text_layer_set_font(s_day_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   
@@ -259,7 +259,7 @@ static void window_load(Window *window) {
   
   s_num_label = text_layer_create(GRect(centre.x + 1, centre.y + 30, 27, 20));
   text_layer_set_text(s_num_label, s_num_buffer);
-  text_layer_set_background_color(s_num_label, GColorBlack);
+  text_layer_set_background_color(s_num_label, GColorClear);
   text_layer_set_text_color(s_num_label, GColorWhite);
   text_layer_set_font(s_num_label, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
 
