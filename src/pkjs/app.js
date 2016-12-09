@@ -5,6 +5,7 @@ var clayConfig = require('./config');
 // Initialize Clay
 var clay = new Clay(clayConfig);
 
+var defaultLoc = 'NSW_PT131';
 var useLoc = false;
 var cachedLoc = null;
 
@@ -19,7 +20,10 @@ var xhrRequest = function (url, type, callback) {
 
 function weatherService(pos) {
   var url = 'http://fj3k.com/pebble/';
-  if (pos) url += '?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
+  if (pos) 
+    url += '?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
+  else if (defaultLoc.length > 0)
+    url += '?acc=' + defaultLoc;
 
   xhrRequest(url, 'GET',
     function(responseText) {
