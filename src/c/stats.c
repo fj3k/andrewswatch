@@ -52,7 +52,8 @@ static void drawBar(Layer *layer, GContext *ctx, int32_t val, int32_t max, bool 
 
   a_graphics_fill_radial(ctx, frame, GOvalScaleModeFitCircle, width, start_angle, end_angle);
 
-  if (tick != NOST) {
+  //Draw ticks only if we have them and there aren't too many.
+  if (tick != NOST && (max / tick) < (full ? 60 : 30)) {
     graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorClear, GColorBlack));
     graphics_context_set_stroke_width(ctx, 1);
     const int16_t inner_length = (frame.size.w / 2) - width - 1;
@@ -148,29 +149,21 @@ void stat_inbox(DictionaryIterator *iter, void *context) {
   if (!s_stats) return;
 
   for (int i = 0; i < 4; i++) {
-    Tuple *stat_data_t = dict_find(iter, MESSAGE_KEY_Stat_data + i);
+    Tuple *stat_data_t = dict_find(iter, MESSAGE_KEY_StatsData + i);
     if (stat_data_t) {
       s_data[i] = stat_data_t->value->int32;
-    } else {
-      s_data[i] = NOST;
     }
-    Tuple *stat_max_t = dict_find(iter, MESSAGE_KEY_Stat_max + i);
+    Tuple *stat_max_t = dict_find(iter, MESSAGE_KEY_StatsMax + i);
     if (stat_max_t) {
       s_max[i] = stat_max_t->value->int32;
-    } else {
-      s_max[i] = NOST;
     }
-    Tuple *stat_tick_t = dict_find(iter, MESSAGE_KEY_Stat_tick + i);
+    Tuple *stat_tick_t = dict_find(iter, MESSAGE_KEY_StatsTick + i);
     if (stat_tick_t) {
       s_tick[i] = stat_tick_t->value->int32;
-    } else {
-      s_tick[i] = NOST;
     }
-    Tuple *stat_neg_t = dict_find(iter, MESSAGE_KEY_Stat_neg + i);
+    Tuple *stat_neg_t = dict_find(iter, MESSAGE_KEY_StatsNeg + i);
     if (stat_neg_t) {
       s_neg[i] = stat_neg_t->value->int32 == 1;
-    } else {
-      s_neg[i] = false;
     }
   }
 }
