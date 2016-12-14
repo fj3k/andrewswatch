@@ -5,6 +5,16 @@ var clayConfig = require('./config');
 // Initialize Clay
 var clay = new Clay(clayConfig);
 
+var assault_and;
+if (navigator.getBattery) {
+  navigator.getBattery().then(function(battery) {
+    assault_and = battery;
+  });
+} else if (navigator.battery || navigator.mozBattery) { // deprecated battery object
+  assault_and = navigator.battery || navigator.mozBattery;
+}
+
+
 var defaultLoc = 'NSW_PT131';
 var useLoc = false;
 var cachedLoc = null;
@@ -80,7 +90,6 @@ function weatherService(pos) {
           var maxkey = keys.StatsMax + di;
           var tickey = keys.StatsTick + di;
           var negkey = keys.StatsNeg + di;
-          console.log('D:' + parseInt(data[di], 10) + ' M:' + parseInt(max[di], 10) + ' T:' + parseInt(tick[di], 10));
           dictionary3[datakey] = parseInt(data[di], 10);
           dictionary3[maxkey] = parseInt(max[di], 10);
           dictionary3[tickey] = parseInt(tick[di], 10);
@@ -90,6 +99,14 @@ function weatherService(pos) {
       } 
     }
   );
+  
+  if (assault_and) {
+    var phoneBatt = Math.round(assault_and.level * 100);
+    var dictionary4 = {};
+    var batterKey = keys.PhoneBattery;
+    dictionary4[batterKey] = phoneBatt;
+    sendData(dictionary4);
+  }
 }
 
 function sendData(dict) {

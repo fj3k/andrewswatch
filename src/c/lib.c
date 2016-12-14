@@ -30,6 +30,18 @@ void draw_hand(GContext *ctx, GPoint clockCentre, int32_t angle, int32_t length)
   graphics_draw_line(ctx, handEnd, clockCentre);
 }
 
+void draw_tick(GContext *ctx, GPoint centre, int32_t angle, int32_t inner_length, int32_t outer_length) {
+  GPoint tick_inner = {
+    .x = (int16_t)(sin_lookup(angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.x,
+    .y = (int16_t)(-cos_lookup(angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.y,
+  };
+  GPoint tick_outer = {
+    .x = (int16_t)(sin_lookup(angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.x,
+    .y = (int16_t)(-cos_lookup(angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.y,
+  };
+  graphics_draw_line(ctx, tick_inner, tick_outer);
+}
+
 void draw_simple_clock(GContext *ctx, time_t now, GPoint clockpoint, int8_t hourlength, int8_t minutelength) {
     struct tm *t = localtime(&now);
     int32_t minute_angle = TRIG_MAX_ANGLE * (0. + t->tm_min) / 60;

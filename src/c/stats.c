@@ -70,15 +70,7 @@ static void drawBar(Layer *layer, GContext *ctx, int32_t val, int32_t max, bool 
       if (!full) tick_angle = tick_angle / 2;
       if (!right) tick_angle = TRIG_MAX_ANGLE - tick_angle;
 
-      GPoint tick_inner = {
-        .x = (int16_t)(sin_lookup(tick_angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.x,
-        .y = (int16_t)(-cos_lookup(tick_angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.y,
-      };
-      GPoint tick_outer = {
-        .x = (int16_t)(sin_lookup(tick_angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.x,
-        .y = (int16_t)(-cos_lookup(tick_angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.y,
-      };
-      graphics_draw_line(ctx, tick_inner, tick_outer);
+      draw_tick(ctx, centre, tick_angle, inner_length, outer_length);
     }
   }
 }
@@ -127,6 +119,7 @@ void draw_stat(Layer *layer, GContext *ctx) {
   //If neither outer nor inner overlap, they both can be full.
   bool full = !((s_data[0] != NOST) && (s_data[2] != NOST)) && !((s_data[1] != NOST) && (s_data[3] != NOST));
   bool innerOnly = (s_data[0] == NOST) && (s_data[2] == NOST);
+
   //Draw stats
   for (int i = 0; i < 4; i++) {
     if (s_data[i] != NOST) {

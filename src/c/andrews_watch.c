@@ -22,25 +22,18 @@ static bool s_utc = false;
 static void bg_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   GPoint centre = grect_center_point(&bounds);
-
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-  graphics_context_set_fill_color(ctx, GColorWhite);
   const int16_t inner_length = (bounds.size.w / 2) - PBL_IF_ROUND_ELSE(s_tickwidth, 1);
   const int16_t outer_length = bounds.size.h / 2;
+
+  //Background colour
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_stroke_width(ctx, 1);
   for (int i = 0; i < 12; ++i) {
     int32_t tick_angle = TRIG_MAX_ANGLE * i / 12;
-    GPoint tick_inner = {
-      .x = (int16_t)(sin_lookup(tick_angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.x,
-      .y = (int16_t)(-cos_lookup(tick_angle) * (int32_t)inner_length / TRIG_MAX_RATIO) + centre.y,
-    };
-    GPoint tick_outer = {
-      .x = (int16_t)(sin_lookup(tick_angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.x,
-      .y = (int16_t)(-cos_lookup(tick_angle) * (int32_t)outer_length / TRIG_MAX_RATIO) + centre.y,
-    };
-    graphics_draw_line(ctx, tick_inner, tick_outer);
+    draw_tick(ctx, centre, tick_angle, inner_length, outer_length);
   }
 
   draw_logo(layer, ctx);
@@ -143,14 +136,9 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 
   //Ask for weather update. Should be removed when the app does this.
   if(tick_time->tm_hour % 6 == 0 && tick_time->tm_min == 30 && tick_time->tm_sec == 0) {
-    // Begin dictionary
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
-  
-    // Add a key-value pair
     dict_write_uint8(iter, 0, 0);
-  
-    // Send the message!
     app_message_outbox_send();
   }
 }
