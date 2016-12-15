@@ -135,10 +135,10 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
 
   //Ask for weather update. Should be removed when the app does this.
-  if(tick_time->tm_hour % 6 == 0 && tick_time->tm_min == 30 && tick_time->tm_sec == 0) {
+  if(tick_time->tm_hour % 6 == 5 && tick_time->tm_min == 20 && tick_time->tm_sec == 0) {
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
-    dict_write_uint8(iter, 0, 0);
+    dict_write_uint32(iter, MESSAGE_KEY_StepCount, health_service_sum_today(HealthMetricStepCount));
     app_message_outbox_send();
   }
 }

@@ -14,10 +14,12 @@ if (navigator.getBattery) {
   assault_and = navigator.battery || navigator.mozBattery;
 }
 
+var maxSteps = localStorage.getItem('maxSteps');
 
 var defaultLoc = 'NSW_PT131';
 var useLoc = false;
 var cachedLoc = null;
+
 var am_buffer = [];
 var am_sending = false;
 
@@ -31,11 +33,11 @@ var xhrRequest = function (url, type, callback) {
 };
 
 function weatherService(pos) {
-  var url = 'http://fj3k.com/pebble/';
+  var url = 'http://fj3k.com/pebble/?stamp=' + maxSteps;
   if (pos && !(pos.coords.latitude === 0 && pos.coords.longitude === 0)) {
-    url += '?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
+    url += '&lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
   } else if (defaultLoc.length > 0) {
-    url += '?acc=' + defaultLoc;
+    url += '&acc=' + defaultLoc;
   }
 
   var keys = require('message_keys');
@@ -105,6 +107,8 @@ function weatherService(pos) {
     var dictionary4 = {};
     var batterKey = keys.PhoneBattery;
     dictionary4[batterKey] = phoneBatt;
+    var stepsKey = keys.StepCount;
+    dictionary4[stepsKey] = maxSteps;
     sendData(dictionary4);
   }
 }
@@ -172,7 +176,14 @@ Pebble.addEventListener('ready',
 // Listen for when an AppMessage is received
 Pebble.addEventListener('appmessage',
   function(e) {
-    console.log('AppMessage received!');
     getWeather();
+
+    console.log('Received message');
+    var dict = e.payload;
+    var steps = dict['StepCount'];
+    if (steps > maxSteps) {
+      maxSteps = steps;
+      localStorage.setItem('maxSteps', maxSteps);
+    }
   }
 );
