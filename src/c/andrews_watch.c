@@ -124,6 +124,13 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
   text_layer_set_text(s_num_label, s_num_buffer);
 }
 
+static void requestWeather() {
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+  dict_write_uint32(iter, MESSAGE_KEY_StepCount, health_service_sum_today(HealthMetricStepCount));
+  app_message_outbox_send();
+}
+
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   if (s_show_seconds || tick_time->tm_sec % 15 == 0 || tick_time->tm_sec % 15 == 7) {
     //layer_mark_dirty(window_get_root_layer(s_window));
@@ -136,10 +143,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 
   //Ask for weather update. Should be removed when the app does this.
   if(tick_time->tm_hour % 6 == 5 && tick_time->tm_min == 20 && tick_time->tm_sec == 0) {
-    DictionaryIterator *iter;
-    app_message_outbox_begin(&iter);
-    dict_write_uint32(iter, MESSAGE_KEY_StepCount, health_service_sum_today(HealthMetricStepCount));
-    app_message_outbox_send();
+    requestWeather();
   }
 }
 
@@ -207,6 +211,8 @@ static void window_load(Window *window) {
 
   //Vibrate if not connected on load.
   //bluetooth_callback(connection_service_peek_pebble_app_connection());
+  
+  requestWeather();
 }
 
 static void window_unload(Window *window) {

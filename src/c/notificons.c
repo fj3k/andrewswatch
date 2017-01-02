@@ -7,6 +7,7 @@ static time_t s_last_update;
 //Seven day forcast plus today (if checked late in the day)
 static int s_forecast[8] = {-2, -2, -2, -2, -2, -2, -2, -2};
 static int s_temperature[8] = {-40, -40, -40, -40, -40, -40, -40, -40};
+static int s_min_temperature[8] = {-40, -40, -40, -40, -40, -40, -40, -40};
 
 static int s_notificons[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -317,6 +318,13 @@ void draw_icon(Layer *layer, GContext *ctx) {
       draw_wind(ctx, weatherpos, weatherforecast == WEATHER_DUSTSTORM);
     }
 
+    if (i == 0 && temp == -40 && s_min_temperature[1] != -40) {
+      graphics_context_set_text_color(ctx, PBL_IF_COLOR_ELSE(GColorElectricBlue, GColorWhite));
+      temp = s_min_temperature[1];
+    } else {
+      graphics_context_set_text_color(ctx, GColorWhite);
+    }
+
     if (temp == 0) {
       char temp_buffer[2] = "0\0";
       graphics_draw_text(ctx, temp_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_14), GRect(weatherpos.x - 16, weatherpos.y + 6, 20, 14), GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
@@ -540,6 +548,10 @@ void icon_inbox(DictionaryIterator *iter, void *context) {
     Tuple *notif_temperature_t = dict_find(iter, MESSAGE_KEY_Temperature + i);
     if (notif_temperature_t) {
       s_temperature[i] = notif_temperature_t->value->int32;
+    }
+    Tuple *notif_min_temperature_t = dict_find(iter, MESSAGE_KEY_MinTemp + i);
+    if (notif_min_temperature_t) {
+      s_min_temperature[i] = notif_min_temperature_t->value->int32;
     }
   }
   Tuple *notif_priority_t = dict_find(iter, MESSAGE_KEY_Priority);
