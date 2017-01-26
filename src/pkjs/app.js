@@ -5,14 +5,7 @@ var clayConfig = require('./config');
 // Initialize Clay
 var clay = new Clay(clayConfig);
 
-var assault_and;
-if (navigator.getBattery) {
-  navigator.getBattery().then(function(battery) {
-    assault_and = battery;
-  });
-} else if (navigator.battery || navigator.mozBattery) { // deprecated battery object
-  assault_and = navigator.battery || navigator.mozBattery;
-}
+var ready = false;
 
 var maxSteps = localStorage.getItem('maxSteps');
 
@@ -42,17 +35,31 @@ function weatherService(pos) {
   }
 
   xhrRequest(url, 'GET', handleResponse);
-  
-  var keys = require('message_keys');
-  if (assault_and) {
-    var phoneBatt = Math.round(assault_and.level * 100);
-    var dictionary4 = {};
-    var batterKey = keys.PhoneBattery;
-    dictionary4[batterKey] = phoneBatt;
-    var stepsKey = keys.StepCount;
-    dictionary4[stepsKey] = maxSteps;
-    sendData(dictionary4);
+}
+
+function initBatt(battery) {
+  if (battery) {
+    battery.addEventListener('chargingchange', function () {
+      battDate(battery.level * 100, battery.charging);
+    });
+    battery.addEventListener('levelchange', function () {
+      battDate(battery.level * 100, battery.charging);
+    });
+    battDate(battery.level * 100, battery.charging);
   }
+}
+
+function battDate(phoneBatt, charging) {
+  var d = new Date();
+  if (!ready || (arguments.callee.lastSend && (arguments.callee.lastSend + 5 * 60 * 1000 > d.getTime()))) return;
+  var keys = require('message_keys');
+  var dictionary4 = {};
+  var batterKey = keys.PhoneBattery;
+  dictionary4[batterKey] = phoneBatt;
+  var stepsKey = keys.StepCount;
+  dictionary4[stepsKey] = maxSteps;
+  sendData(dictionary4);
+  arguments.callee.lastSend = d.getTime();    
 }
 
 function handleResponse(responseText) {
@@ -77,7 +84,6 @@ function parseResponse(jsonText) {
     dictionary[icokey] = icon;
     dictionary[tempkey] = (tempMax.length > 0) ? parseInt(tempMax, 10) : -40;
     dictionary[mintempkey] = (tempMin.length > 0) ? parseInt(tempMin, 10) : -40;
-    console.log(dictionary[mintempkey]);
     sendData(dictionary);
   }
 
@@ -128,7 +134,6 @@ function parseResponse(jsonText) {
 function sendData(dict) {
   if (am_sending) {
     am_buffer.push(dict);
-    console.log('Queued. Buffer size: ' + am_buffer.length);
   } else {
     am_sending = 1;
     Pebble.sendAppMessage(dict, sendDataAppSuccess, sendDataAppError);
@@ -182,10 +187,17 @@ function getWeather() {
 // Listen for when the watchface is opened
 Pebble.addEventListener('ready',
   function(e) {
-    console.log('PebbleKit JS ready!');
-
     // Get the initial weather
+    ready = true;
+
     getWeather();
+    if (navigator.getBattery) {
+      navigator.getBattery().then(function(battery) {
+        initBatt(battery);
+      });
+    } else if (navigator.battery || navigator.mozBattery) { // deprecated battery object
+      initBatt(navigator.battery || navigator.mozBattery);
+    }
   }
 );
 // Listen for when an AppMessage is received

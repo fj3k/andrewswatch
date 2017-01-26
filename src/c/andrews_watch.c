@@ -217,6 +217,7 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
   layer_destroy(s_simple_bg_layer);
+  layer_destroy(s_simple_stats_layer);
   layer_destroy(s_date_layer);
   
   text_layer_destroy(s_day_label);

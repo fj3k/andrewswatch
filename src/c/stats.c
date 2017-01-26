@@ -17,7 +17,7 @@ static void drawBar(Layer *layer, GContext *ctx, int32_t val, int32_t max, bool 
   GRect bounds = layer_get_bounds(layer);
   GPoint centre = grect_center_point(&bounds);
 
-  int inset = PBL_IF_ROUND_ELSE(0, -2);
+  int inset = PBL_IF_ROUND_ELSE(2, -2);
   int width = 4;
   if (inner) {
     inset = inset + 5;
