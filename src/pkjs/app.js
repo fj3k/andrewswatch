@@ -51,7 +51,8 @@ function initBatt(battery) {
 
 function battDate(phoneBatt, charging) {
   var d = new Date();
-  if (!ready || (arguments.callee.lastSend && (arguments.callee.lastSend + 5 * 60 * 1000 > d.getTime()))) return;
+  var checkmins = Math.floor(phoneBatt / 100 * 60);
+  if (!ready || (arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
   var keys = require('message_keys');
   var dictionary4 = {};
   var batterKey = keys.PhoneBattery;
