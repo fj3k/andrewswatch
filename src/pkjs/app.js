@@ -88,12 +88,60 @@ function parseResponse(jsonText) {
     sendData(dictionary);
   }
 
+  var sentAFL = false;
+  for (var g = 0; g < json.afl.games.length; g++) {
+    if (/NMFC/i.test(json.afl.games[g].abbr)) {
+      sentAFL = !/NEXT/i.test(json.afl.games[g].status);
+      if (!sentAFL) break;
+      //RIGHT OUTER, RIGHT INNER, LEFT OUTER, LEFT INNER
+      //NM Score, Elapsed Time, Opponent Score, Quarter
+      var afldata = [0, 0, 0, 0];
+      var aflmax = [36, 1800, 36, 4];
+      var afltick = [6, 300, 6, 1];
+
+      if (/DONE/i.test(json.afl.games[g].status)) {
+        afldata[1] = aflmax[1] = 1800;
+        afldata[3] = 4;
+      } else {
+        afldata[1] = parseInt(json.afl.games[g].elapsedSeconds, 10);
+        aflmax[1] = afldata[1] > 1800 ? afldata[1] : 1800;
+        afldata[3] = parseInt(json.afl.games[g].quarter, 10);
+      }
+
+      var hmi = 0;
+      if (json.afl.games[g].away.name == 'North Melbourne') hmi = 2;
+      var homeScore = parseInt(json.afl.games[g].home.score[2], 10);
+      var awayScore = parseInt(json.afl.games[g].away.score[2], 10);
+      afldata[hmi] = homeScore;
+      afldata[(hmi+2)%4] = awayScore;
+      var maxScore = homeScore > awayScore ? homeScore : awayScore;
+      if (maxScore > aflmax[0]) {
+        aflmax[0] = aflmax[2] = maxScore;
+      }
+
+      console.log(afldata);
+      for (var adi = 0; adi < 4; adi++) {
+        var dictionary3 = {};
+        var afldatakey = keys.StatsData + adi;
+        var aflmaxkey = keys.StatsMax + adi;
+        var afltickey = keys.StatsTick + adi;
+        var aflnegkey = keys.StatsNeg + adi;
+        dictionary3[afldatakey] = parseInt(afldata[adi], 10);
+        dictionary3[aflmaxkey] = parseInt(aflmax[adi], 10);
+        dictionary3[afltickey] = parseInt(afltick[adi], 10);
+        dictionary3[aflnegkey] = 0;
+        sendData(dictionary3);
+      }
+    }
+  }
+
   var dictionary2 = {};
   var statskey = keys.ShowStreams;
-  dictionary2[statskey] = json.stats.active;
+  dictionary2[statskey] = (json.stats.active || sentAFL) ? 1 : 0;
   sendData(dictionary2);
+
   var NOST = -2147483648;
-  if (json.stats.active) {
+  if (json.stats.active && !sentAFL) {
     var data = [NOST, NOST, NOST, NOST];
     var max = [NOST, NOST, NOST, NOST];
     var tick = [NOST, NOST, NOST, NOST];
@@ -117,16 +165,16 @@ function parseResponse(jsonText) {
     }
 
     for (var di = 0; di < 4; di++) {
-      var dictionary3 = {};
+      var dictionary4 = {};
       var datakey = keys.StatsData + di;
       var maxkey = keys.StatsMax + di;
       var tickey = keys.StatsTick + di;
       var negkey = keys.StatsNeg + di;
-      dictionary3[datakey] = parseInt(data[di], 10);
-      dictionary3[maxkey] = parseInt(max[di], 10);
-      dictionary3[tickey] = parseInt(tick[di], 10);
-      dictionary3[negkey] = neg[di];
-      sendData(dictionary3);
+      dictionary4[datakey] = parseInt(data[di], 10);
+      dictionary4[maxkey] = parseInt(max[di], 10);
+      dictionary4[tickey] = parseInt(tick[di], 10);
+      dictionary4[negkey] = neg[di];
+      sendData(dictionary4);
     }
   } 
 }
