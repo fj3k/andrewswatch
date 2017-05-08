@@ -13,6 +13,7 @@ var defaultLoc = 'NSW_PT131';
 var useLoc = false;
 var cachedLoc = null;
 var cachedData = localStorage.getItem('dataCache');
+var scoreTimer = false;
 
 var am_buffer = [];
 var am_sending = false;
@@ -132,6 +133,10 @@ function parseResponse(jsonText) {
           dictionary3[aflnegkey] = 0;
           sendData(dictionary3);
         }
+        if (/LIVE/i.test(json.afl.games[g].status) && scoreTimer === false) {
+          scoreTimer = true;
+          setTimeout(getScore, 60000);
+        }
       }
     }
   }
@@ -232,6 +237,12 @@ function getWeather() {
   } else {
     weatherService();
   }
+}
+
+function getScore() {
+  scoreTimer = false;
+  cachedData = null;
+  getWeather();
 }
 
 // Listen for when the watchface is opened
