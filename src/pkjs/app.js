@@ -92,51 +92,57 @@ function parseResponse(jsonText) {
   var sentAFL = false;
   if (json.afl) {
     for (var g = 0; g < json.afl.games.length; g++) {
-      if (/NMFC/i.test(json.afl.games[g].abbr)) {
-        sentAFL = !/NEXT/i.test(json.afl.games[g].status);
-        if (!sentAFL) break;
-        //RIGHT OUTER, RIGHT INNER, LEFT OUTER, LEFT INNER
-        //NM Score, Elapsed Time, Opponent Score, Quarter
-        var afldata = [0, 0, 0, 0];
-        var aflmax = [36, 1800, 36, 4];
-        var afltick = [6, 300, 6, 1];
-  
-        if (/DONE/i.test(json.afl.games[g].status)) {
-          afldata[1] = aflmax[1] = 1800;
-          afldata[3] = 4;
-        } else {
-          afldata[1] = parseInt(json.afl.games[g].elapsedSeconds, 10);
-          aflmax[1] = afldata[1] > 1800 ? afldata[1] : 1800;
-          afldata[3] = parseInt(json.afl.games[g].quarter, 10);
-        }
-  
-        var hmi = 0;
-        if (json.afl.games[g].away.name == 'North Melbourne') hmi = 2;
-        var homeScore = parseInt(json.afl.games[g].home.score[2], 10);
-        var awayScore = parseInt(json.afl.games[g].away.score[2], 10);
-        afldata[hmi] = homeScore;
-        afldata[(hmi+2)%4] = awayScore;
-        var maxScore = homeScore > awayScore ? homeScore : awayScore;
-        if (maxScore > aflmax[0]) {
-          aflmax[0] = aflmax[2] = maxScore;
-        }
-  
-        for (var adi = 0; adi < 4; adi++) {
-          var dictionary3 = {};
-          var afldatakey = keys.StatsData + adi;
-          var aflmaxkey = keys.StatsMax + adi;
-          var afltickey = keys.StatsTick + adi;
-          var aflnegkey = keys.StatsNeg + adi;
-          dictionary3[afldatakey] = parseInt(afldata[adi], 10);
-          dictionary3[aflmaxkey] = parseInt(aflmax[adi], 10);
-          dictionary3[afltickey] = parseInt(afltick[adi], 10);
-          dictionary3[aflnegkey] = 0;
-          sendData(dictionary3);
-        }
-        if (/LIVE/i.test(json.afl.games[g].status) && scoreTimer === false) {
-          scoreTimer = true;
-          setTimeout(getScore, 60000);
-        }
+      if (!/NMFC/i.test(json.afl.games[g].abbr)) continue;
+
+      //Don't show if the game is done and it's been 4 hours since it started.
+      var now = new Date();
+      var gameStart = new Date(json.afl.games[g].date);
+      if (/DONE/i.test(json.afl.games[g].status) && (gameStart.getTime() + 4 * 60 * 60 * 1000 < now.getTime())) break;
+
+      sentAFL = !/NEXT/i.test(json.afl.games[g].status);
+      if (!sentAFL) break;
+
+      //RIGHT OUTER, RIGHT INNER, LEFT OUTER, LEFT INNER
+      //NM Score, Elapsed Time, Opponent Score, Quarter
+      var afldata = [0, 0, 0, 0];
+      var aflmax = [36, 1800, 36, 4];
+      var afltick = [6, 300, 6, 1];
+
+      if (/DONE/i.test(json.afl.games[g].status)) {
+        afldata[1] = aflmax[1] = 1800;
+        afldata[3] = 4;
+      } else {
+        afldata[1] = parseInt(json.afl.games[g].elapsedSeconds, 10);
+        aflmax[1] = afldata[1] > 1800 ? afldata[1] : 1800;
+        afldata[3] = parseInt(json.afl.games[g].quarter, 10);
+      }
+
+      var hmi = 0;
+      if (json.afl.games[g].away.name == 'North Melbourne') hmi = 2;
+      var homeScore = parseInt(json.afl.games[g].home.score[2], 10);
+      var awayScore = parseInt(json.afl.games[g].away.score[2], 10);
+      afldata[hmi] = homeScore;
+      afldata[(hmi+2)%4] = awayScore;
+      var maxScore = homeScore > awayScore ? homeScore : awayScore;
+      if (maxScore > aflmax[0]) {
+        aflmax[0] = aflmax[2] = maxScore;
+      }
+
+      for (var adi = 0; adi < 4; adi++) {
+        var dictionary3 = {};
+        var afldatakey = keys.StatsData + adi;
+        var aflmaxkey = keys.StatsMax + adi;
+        var afltickey = keys.StatsTick + adi;
+        var aflnegkey = keys.StatsNeg + adi;
+        dictionary3[afldatakey] = parseInt(afldata[adi], 10);
+        dictionary3[aflmaxkey] = parseInt(aflmax[adi], 10);
+        dictionary3[afltickey] = parseInt(afltick[adi], 10);
+        dictionary3[aflnegkey] = 0;
+        sendData(dictionary3);
+      }
+      if (/LIVE/i.test(json.afl.games[g].status) && scoreTimer === false) {
+        scoreTimer = true;
+        setTimeout(getScore, 60000);
       }
     }
   }
