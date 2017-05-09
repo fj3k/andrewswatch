@@ -13,6 +13,8 @@ var defaultLoc = 'NSW_PT131';
 var useLoc = false;
 var cachedLoc = null;
 var cachedData = localStorage.getItem('dataCache');
+var cachedTime = localStorage.getItem('dataCacheTime');
+var timetoCache = 6 * 60 * 60;
 var scoreTimer = false;
 
 var am_buffer = [];
@@ -66,7 +68,9 @@ function battDate(phoneBatt, charging) {
 
 function handleResponse(responseText) {
   cachedData = responseText;
+  cachedTime = (new Date()).getTime() / 1000 + timetoCache;
   localStorage.setItem('dataCache', cachedData);
+  localStorage.setItem('dataCacheTime', cachedTime);
   parseResponse(responseText);
 }
 
@@ -229,9 +233,10 @@ function locationError(err) {
   weatherService(cachedLoc);
 }
 
-function getWeather() {
-  if (cachedData) {
+function getWeather(clearCache) {
+  if (!clearCache && cachedData && cachedTime && (cachedTime > (new Date()).getTime() / 1000)) {
     parseResponse(cachedData);
+    return;
   }
   if (useLoc) {
     //navigator.geolocation.getCurrentPosition( //one time
@@ -247,8 +252,7 @@ function getWeather() {
 
 function getScore() {
   scoreTimer = false;
-  cachedData = null;
-  getWeather();
+  getWeather(true);
 }
 
 // Listen for when the watchface is opened
@@ -270,8 +274,7 @@ Pebble.addEventListener('ready',
 // Listen for when an AppMessage is received
 Pebble.addEventListener('appmessage',
   function(e) {
-    cachedData = null;
-    getWeather();
+    getWeather(true);
 
     console.log('Received message');
     var dict = e.payload;
