@@ -152,6 +152,7 @@ static void bluetooth_callback(bool connected) {
     // Issue a vibrating alert
     vibes_double_pulse();
   }
+  icon_connex(connected);
 }
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {

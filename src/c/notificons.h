@@ -3,6 +3,7 @@
 void icon_init(Layer*);
 void draw_icon(Layer*, GContext*);
 void icon_inbox(DictionaryIterator*, void*);
+void icon_connex(bool connected);
 
 static const int NOTIF_NONE = -1;
 static const int NOTIF_CALL = 0;

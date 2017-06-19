@@ -31,7 +31,8 @@
             "StatsNeg[4]",
             "PhoneBattery",
             "StepCount",
-            "MinTemp[8]"
+            "MinTemp[8]",
+            "PhoneCharging"
         ],
         "projectType": "native",
         "resources": {

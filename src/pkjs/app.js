@@ -14,7 +14,7 @@ var useLoc = false;
 var cachedLoc = null;
 var cachedData = localStorage.getItem('dataCache');
 var cachedTime = localStorage.getItem('dataCacheTime');
-var timetoCache = 6 * 60 * 60;
+var timetoCache = 1 * 60 * 60;
 var scoreTimer = false;
 
 var am_buffer = [];
@@ -55,11 +55,13 @@ function initBatt(battery) {
 function battDate(phoneBatt, charging) {
   var d = new Date();
   var checkmins = Math.floor(phoneBatt / 100 * 60);
-  if (!ready || (arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
+  if (!ready || (!charging && arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
   var keys = require('message_keys');
   var dictionary4 = {};
   var batterKey = keys.PhoneBattery;
   dictionary4[batterKey] = phoneBatt;
+  var chargeKey = keys.PhoneCharging;
+  dictionary4[chargeKey] = charging;
   var stepsKey = keys.StepCount;
   dictionary4[stepsKey] = maxSteps;
   sendData(dictionary4);
@@ -261,7 +263,7 @@ Pebble.addEventListener('ready',
     // Get the initial weather
     ready = true;
 
-    getWeather();
+    getWeather(true);
     if (navigator.getBattery) {
       navigator.getBattery().then(function(battery) {
         initBatt(battery);

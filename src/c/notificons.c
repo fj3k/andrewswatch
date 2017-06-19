@@ -14,6 +14,8 @@ static int s_notificons[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 static int s_priority = -1;
 
 static int s_phone_battery = 100;
+static bool s_phone_charging = false;
+static bool s_no_phone = false;
 
 //Paths
 static GPath *s_call_path_ptr = NULL;
@@ -75,6 +77,7 @@ static GPoint s_weather_pos[3];
 static GPoint s_noticon_pos[7];
 static GPoint s_priority_pos;
 static GPoint s_battery_pos;
+static GPoint s_phone_pos;
 static GPoint s_dotdotdot_pos;
 
 
@@ -218,7 +221,8 @@ void icon_init(Layer *window_layer) {
     s_weather_pos[i - 2] = GPoint((int16_t)(sin_lookup(tick_angle) * hand_length / TRIG_MAX_RATIO) + icontre.x, (int16_t)(-cos_lookup(tick_angle) * hand_length / TRIG_MAX_RATIO) + icontre.y);
   }
   s_priority_pos = GPoint(icontre.x - (hand_length - 25), icontre.y);
-  s_battery_pos = GPoint(icontre.x + (hand_length - 25), icontre.y);
+  s_battery_pos = GPoint(icontre.x + (hand_length - 45), icontre.y);
+  s_phone_pos = GPoint(icontre.x + (hand_length - 25), icontre.y);
 
   //Notifications
   s_call_path_ptr = gpath_create(&CALL_PATH);
@@ -458,19 +462,35 @@ void draw_icon(Layer *layer, GContext *ctx) {
       gpath_move_to(s_storm_2_path_ptr, GPoint(s_battery_pos.x, s_battery_pos.y - 4));
       gpath_draw_outline(ctx, s_storm_2_path_ptr);
     }
-  } else if (s_phone_battery < 20) {
+  }
+  if (s_phone_battery < 20 || s_phone_charging || s_no_phone) {
     graphics_context_set_stroke_color(ctx, GColorWhite);
-    gpath_move_to(s_phone_path_ptr, s_battery_pos);
+    gpath_move_to(s_phone_path_ptr, s_phone_pos);
     gpath_draw_outline(ctx, s_phone_path_ptr);
-    if (s_phone_battery < 10) {
-      graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
-    } else {
-      graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorYellow, GColorWhite));
+    if (s_phone_battery < 20 || s_phone_charging) {
+      if (s_phone_battery < 10) {
+        graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
+      } else if (s_phone_battery < 20) {
+        graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorYellow, GColorWhite));
+      }
+      gpath_move_to(s_battery_path_ptr, s_phone_pos);
+      gpath_draw_outline(ctx, s_battery_path_ptr);
+      int chargeOffset = 14 - (s_phone_battery / 100. * 12);
+      graphics_draw_line(ctx, GPoint(s_phone_pos.x + 5, s_phone_pos.y + chargeOffset), GPoint(s_phone_pos.x + 11, s_phone_pos.y + chargeOffset));
+      if (s_phone_charging) {
+        graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorElectricBlue, GColorWhite));
+        gpath_move_to(s_storm_2_path_ptr, GPoint(s_phone_pos.x, s_phone_pos.y - 4));
+        gpath_draw_outline(ctx, s_storm_2_path_ptr);
+      }
     }
-    gpath_move_to(s_battery_path_ptr, s_battery_pos);
-    gpath_draw_outline(ctx, s_battery_path_ptr);
-    int chargeOffset = 14 - (s_phone_battery / 100. * 12);
-    graphics_draw_line(ctx, GPoint(s_battery_pos.x + 5, s_battery_pos.y + chargeOffset), GPoint(s_battery_pos.x + 11, s_battery_pos.y + chargeOffset));
+    if (s_no_phone) {
+      graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBlack, GColorBlack));
+      graphics_context_set_stroke_width(ctx, 5);
+      graphics_draw_line(ctx, GPoint(s_phone_pos.x, s_phone_pos.y + 12), GPoint(s_phone_pos.x + 16, s_phone_pos.y + 4));
+      graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
+      graphics_context_set_stroke_width(ctx, 1);
+      graphics_draw_line(ctx, GPoint(s_phone_pos.x, s_phone_pos.y + 12), GPoint(s_phone_pos.x + 16, s_phone_pos.y + 4));
+    }
   }
 }
 
@@ -562,4 +582,12 @@ void icon_inbox(DictionaryIterator *iter, void *context) {
   if (notif_battery_t) {
     s_phone_battery = notif_battery_t->value->int32;
   }
+  Tuple *notif_charging_t = dict_find(iter, MESSAGE_KEY_PhoneCharging);
+  if (notif_charging_t) {
+    s_phone_charging = notif_charging_t->value->int32;
+  }
+}
+
+void icon_connex(bool connected) {
+  s_no_phone = !connected;
 }
