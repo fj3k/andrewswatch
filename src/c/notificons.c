@@ -445,17 +445,19 @@ void draw_icon(Layer *layer, GContext *ctx) {
   }
 
   BatteryChargeState charge_state = battery_state_service_peek();
-  if (charge_state.charge_percent < 20 || charge_state.is_charging) {
+  if (charge_state.charge_percent < 20 || charge_state.is_charging || t->tm_hour > 20) {
     if (charge_state.charge_percent < 10) {
       graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
     } else if (charge_state.charge_percent < 20) {
       graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorYellow, GColorWhite));
+    } else if (charge_state.charge_percent >= 60) {
+      graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBrightGreen, GColorWhite));
     } else {
       graphics_context_set_stroke_color(ctx, GColorWhite);
     }
     gpath_move_to(s_battery_path_ptr, s_battery_pos);
     gpath_draw_outline(ctx, s_battery_path_ptr);
-    int chargeOffset = 14 - (charge_state.charge_percent / 100. * 12);
+    int chargeOffset = 14 - (charge_state.charge_percent / 100. * 11);
     graphics_draw_line(ctx, GPoint(s_battery_pos.x + 5, s_battery_pos.y + chargeOffset), GPoint(s_battery_pos.x + 11, s_battery_pos.y + chargeOffset));
     if (charge_state.is_charging) {
       graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorElectricBlue, GColorWhite));
@@ -463,6 +465,7 @@ void draw_icon(Layer *layer, GContext *ctx) {
       gpath_draw_outline(ctx, s_storm_2_path_ptr);
     }
   }
+
   if (s_phone_battery < 20 || s_phone_charging || s_no_phone) {
     graphics_context_set_stroke_color(ctx, GColorWhite);
     gpath_move_to(s_phone_path_ptr, s_phone_pos);
@@ -472,10 +475,12 @@ void draw_icon(Layer *layer, GContext *ctx) {
         graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorRed, GColorWhite));
       } else if (s_phone_battery < 20) {
         graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorYellow, GColorWhite));
+      } else if (s_phone_battery >= 80) {
+        graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorBrightGreen, GColorWhite));
       }
       gpath_move_to(s_battery_path_ptr, s_phone_pos);
       gpath_draw_outline(ctx, s_battery_path_ptr);
-      int chargeOffset = 14 - (s_phone_battery / 100. * 12);
+      int chargeOffset = 14 - (s_phone_battery / 100. * 11);
       graphics_draw_line(ctx, GPoint(s_phone_pos.x + 5, s_phone_pos.y + chargeOffset), GPoint(s_phone_pos.x + 11, s_phone_pos.y + chargeOffset));
       if (s_phone_charging) {
         graphics_context_set_stroke_color(ctx, PBL_IF_COLOR_ELSE(GColorElectricBlue, GColorWhite));
