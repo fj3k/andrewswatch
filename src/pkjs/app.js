@@ -55,7 +55,8 @@ function initBatt(battery) {
 function battDate(phoneBatt, charging) {
   var d = new Date();
   var checkmins = Math.floor(phoneBatt / 100 * 60);
-  if (!ready || (!charging && arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
+//  if (!ready || (!charging && arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
+  if (!ready || ((arguments.callee.lastCharging === charging) && arguments.callee.lastSend && (arguments.callee.lastSend + checkmins * 60 * 1000 > d.getTime()))) return;
   var keys = require('message_keys');
   var dictionary4 = {};
   var batterKey = keys.PhoneBattery;
@@ -65,7 +66,8 @@ function battDate(phoneBatt, charging) {
   var stepsKey = keys.StepCount;
   dictionary4[stepsKey] = maxSteps;
   sendData(dictionary4);
-  arguments.callee.lastSend = d.getTime();    
+  arguments.callee.lastSend = d.getTime();
+  arguments.callee.lastCharging = charging;
 }
 
 function handleResponse(responseText) {

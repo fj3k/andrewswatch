@@ -132,6 +132,7 @@ static void requestWeather() {
 }
 
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
+  char *dow_duffer = " ";
   if (s_show_seconds || tick_time->tm_sec % 15 == 0 || tick_time->tm_sec % 15 == 7) {
     //layer_mark_dirty(window_get_root_layer(s_window));
     layer_mark_dirty(s_hands_layer);
@@ -142,17 +143,23 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
 
   //Ask for weather update. Should be removed when the app does this.
-  if(tick_time->tm_hour % 6 == 5 && tick_time->tm_min == 20 && tick_time->tm_sec == 0) {
+  if (tick_time->tm_hour % 6 == 5 && tick_time->tm_min == 20 && tick_time->tm_sec == 0) {
     requestWeather();
+  }
+  //Go home!
+  strftime(dow_duffer, sizeof(dow_duffer), "%u", tick_time);
+  if (dow_duffer[0] - '0' < 6 && tick_time->tm_hour == 17 && tick_time->tm_min == 30 && tick_time->tm_sec == 0) {
+    vibes_double_pulse();
   }
 }
 
 static void bluetooth_callback(bool connected) {
-  if(!connected) {
+  if (!connected) {
     // Issue a vibrating alert
     vibes_double_pulse();
   }
   icon_connex(connected);
+  layer_mark_dirty(s_simple_stats_layer);
 }
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
